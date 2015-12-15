@@ -4,13 +4,22 @@ using System.IO;
 using System.Runtime.InteropServices;
 
 public class ShareAndroid : MonoBehaviour {
-	public static ShareAndroid mInstance = new ShareAndroid();
+	public static ShareAndroid instance = null;
 	
-	public static ShareAndroid Instance{
-		get{return mInstance;}
+	void Awake(){
+		if(instance == null)
+			instance = this;
+		else if(instance != this)
+			Destroy(gameObject);
 	}
 	
-	private string url = "https://play.google.com/store/apps/details?id=com.cgranule.jump";
+	private string url = "https://play.google.com/store/apps/details?id=";
+	private string packageName;
+
+	public void ShareNow(string packageName){
+		this.packageName = packageName;
+		StartCoroutine(Share());
+	}
 
 	public void TakeScreenshot(){
 		string path = System.IO.Path.Combine(Application.persistentDataPath, "share.png");
@@ -29,7 +38,7 @@ public class ShareAndroid : MonoBehaviour {
 		intentObject.Call<AndroidJavaObject>("setType", "image/*");
 		intentObject.Call<AndroidJavaObject>("putExtra", intentClass.GetStatic<string>("EXTRA_SUBJECT"), "I've got " + GameManager.instance.score.ToString() + "!!! Can you beat it?");
 		intentObject.Call<AndroidJavaObject>("putExtra", intentClass.GetStatic<string>("EXTRA_TITLE"), "I've got " + GameManager.instance.score.ToString() + "!!! Can you beat it?");
-		intentObject.Call<AndroidJavaObject>("putExtra", intentClass.GetStatic<string>("EXTRA_TEXT"), "Play now at " +url);
+		intentObject.Call<AndroidJavaObject>("putExtra", intentClass.GetStatic<string>("EXTRA_TEXT"), "Play now at " +url+packageName);
 		
 		AndroidJavaClass uriClass = new AndroidJavaClass("android.net.Uri");
 		AndroidJavaClass fileClass = new AndroidJavaClass("java.io.File");
